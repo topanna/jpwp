@@ -6,7 +6,7 @@
 package stolice;
 
 /**
- *
+ * 
  * @author Ania
  */
 public class Game {
