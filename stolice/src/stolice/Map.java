@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 /**
@@ -75,9 +76,13 @@ public class Map extends JPanel implements MouseListener {
 
         super.paintComponent(g);
         try {
-            img = ImageIO.read(new File("map.png"));
-            blackPin = ImageIO.read(new File("pinblack.png"));
-            redPin = ImageIO.read(new File("pinred.png"));
+            //img = ImageIO.read(new File("build\\classes\\res\\map.png"));
+            //img = new ImageIcon(this.getClass().getResource("map.png")).getImage();
+            img = ImageIO.read(getClass().getResource("/res/map.png"));
+
+            
+            blackPin = ImageIO.read(getClass().getResource("/res/pinblack.png"));
+            redPin = ImageIO.read(getClass().getResource("/res/pinred.png"));
         } catch (IOException ex) {
             Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
         }
