@@ -1,2 +1,0 @@
-stolice.Start
-stolice.ImagePanel
