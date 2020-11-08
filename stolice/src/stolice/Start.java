@@ -16,6 +16,7 @@ import java.awt.Graphics;
 import javax.swing.JFrame;
 
 public class Start {
+
     Graphics g;
 
     public static void main(String[] args) {
@@ -24,7 +25,7 @@ public class Start {
         frame.setResizable(false);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Map map = new Map();
+        GamePanel map = new GamePanel();
         frame.add(map); //getcontentpane
         frame.pack();
         frame.setVisible(true);
