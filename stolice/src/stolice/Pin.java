@@ -83,12 +83,13 @@ public class Pin {
         return Images.redPin;
     }
     
-    public static double getDifferenceInPx(int x1, int y1, int x2, int y2) {
+    public static double getDifferenceInKm(int x1, int y1, int x2, int y2) {
         int h = abs(x2 - x1);
         //System.out.println(h);
         int v = abs(y2 - y1);
         //System.out.println(v);
-        return sqrt(h*h + v*v);
+        double diffInPx = sqrt(h*h + v*v);
+        return diffInPx/18.25 * 100; //km
     }
-
+    
 }

@@ -15,14 +15,17 @@ import java.awt.event.ActionListener;
 public class GameLoop implements ActionListener {
 
     private GamePanel panel;
+    int k;
 
     public GameLoop(GamePanel panel) {
         this.panel = panel;
+        //this.k = panel.k;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         this.panel.doOneLoop();
+        
     }
 
 }
