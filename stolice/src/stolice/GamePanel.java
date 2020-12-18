@@ -44,7 +44,7 @@ public class GamePanel extends JPanel implements MouseListener {
 
     boolean mouseClicked = false;
     boolean mouseReleased = false;
-    int roundCounter = 0;
+    int roundsCounter = 0;
     private Timer timer;
     double diff;
     JLabel capitalNameLabel, distanceLabel, scoreLabel;
@@ -110,17 +110,17 @@ public class GamePanel extends JPanel implements MouseListener {
 
         if (mouseClicked) {
 
-            g.drawImage(Images.redPin, Pin.getActualX(roundCounter) - 12, Pin.getActualY(roundCounter) - 38, null);
+            g.drawImage(Images.redPin, Pin.getActualX(roundsCounter) - 12, Pin.getActualY(roundsCounter) - 38, null);
 
         }
 
     }
 
     public void startRound(Graphics g) {
-        if (delayCounter == 0) {
+        if (running && activeDisplay) {             //if delaycounter == 0
             //g.setFont(new Font("SansSerif", Font.PLAIN, 28));
             //g.drawString(Pin.capitals.get(roundCounter).getName(), 30, 50);
-            capitalNameLabel.setText(Pin.capitals.get(roundCounter).getName());
+            capitalNameLabel.setText(Pin.capitals.get(roundsCounter).getName());
             capitalNameLabel.repaint();
         }
     }
@@ -164,21 +164,21 @@ public class GamePanel extends JPanel implements MouseListener {
         showActualPin(g);
 
         displayScore(g);
-        System.out.println("REPAINT");
+        //System.out.println("REPAINT");
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         if (activeDisplay) {
             mouseClicked = true;
-            roundCounter = roundCounter + 1;
+            roundsCounter = roundsCounter + 1;
             Pin.loadPlayerXY(e.getX(), e.getY());
 
             System.out.println(Pin.getPlayerX() + ", " + Pin.getPlayerY());
 
-            System.out.println(Pin.getActualX(roundCounter) + ", " + Pin.getActualY(roundCounter));
+            //System.out.println(Pin.getActualX(roundsCounter) + ", " + Pin.getActualY(roundsCounter));
 
-            diff = Math.round(Pin.getDifferenceInKm(Pin.getPlayerX(), Pin.getPlayerY(), Pin.getActualX(roundCounter), Pin.getActualY(roundCounter)));
+            diff = Math.round(Pin.getDifferenceInKm(Pin.getPlayerX(), Pin.getPlayerY(), Pin.getActualX(roundsCounter), Pin.getActualY(roundsCounter)));
             BigDecimal diffString = new BigDecimal(Double.valueOf(diff).toString());
             differenceInKm = diffString.stripTrailingZeros().toPlainString();
 
@@ -208,30 +208,27 @@ public class GamePanel extends JPanel implements MouseListener {
 
     public void doOneLoop() {
         if (running == true) {
-            System.out.println("RUNNING");
+            //System.out.println("RUNNING");
         }
 
         if (mouseClicked == true) {
             activeDisplay = false;
-            System.out.println(delayCounter);
-            System.out.println("MOUSE CLICKED");
+            //System.out.println(delayCounter);
+            //System.out.println("MOUSE CLICKED");
             delayCounter++;
             if (delayCounter == 30) {
-
-                System.out.println(delayCounter);
-
-                System.out.println("END DISPLAY");
+                //System.out.println(delayCounter);
+                //System.out.println("END DISPLAY");
                 mouseClicked = false;
                 nextRound = true;
                 delayCounter++;
-
             }
             if (delayCounter > 30) {
                 delayCounter = 0;
                 activeDisplay = true;
             }
         }
-
+        
         repaint();
     }
 
