@@ -34,14 +34,6 @@ public class Pin {
         this.actualPin = Images.redPin;
     }
 
-//    public static void initActualPoints() {
-//        points = new ArrayList<Point>();
-//        points.add(new Point(0, 0));
-//        points.add(new Point(587, 408));
-//        points.add(new Point(494, 409));
-//        points.add(new Point(660, 360));
-//    }
-
     public static void initActualCapitals() {
         capitals = new ArrayList<Capital>();
         capitals.add(new Capital(1, "MADRYT, Hiszpania", 227, 640));
@@ -67,7 +59,7 @@ public class Pin {
         capitals.add(new Capital(21, "ATENY, Grecja", 679, 691));
         capitals.add(new Capital(22, "BELGRAD, Serbia", 604, 572));
         capitals.add(new Capital(23, "BUDAPESZT, Węgry", 576, 508));
-        capitals.add(new Capital(24, "WILNO, Litwa", 587, 408));
+        capitals.add(new Capital(24, "WILNO, Litwa", 633, 352));
         capitals.add(new Capital(25, "BRUKSELA, Belgia", 380, 446));
         capitals.add(new Capital(26, "SOFIA, Bułgaria", 657, 593));
         capitals.add(new Capital(27, "KOPENHAGA, Dania", 478, 351));

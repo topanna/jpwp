@@ -25,6 +25,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import static java.lang.Math.sqrt;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -46,13 +47,17 @@ public class GamePanel extends JPanel implements MouseListener {
     boolean mouseReleased = false;
     int roundsCounter = 0;
     private Timer timer;
-    double diff;
+    double getDistance;
     JLabel capitalNameLabel, distanceLabel, scoreLabel;
-    int delayCounter = 0;
+    int timePassed = 0;
     boolean running = false;
     boolean nextRound = false;
     boolean activeDisplay = false;
-    String differenceInKm;
+    String distanceInKm, score;
+    double sumScore = 0;
+    int timeBonus = 0;
+    int width = 1024;
+    int totalScore = 0;
 
     public GamePanel() {
         setPreferredSize(new Dimension(1024, 768));
@@ -61,10 +66,15 @@ public class GamePanel extends JPanel implements MouseListener {
         //Pin.initActualPoints();
         Pin.initActualCapitals();
         Images.getImages();
-        timer = new Timer(100, new GameLoop(this));
+        timer = new Timer(50, new GameLoop(this));
         timer.start();
         running = true;
         activeDisplay = true;
+        initLayout();
+
+    }
+
+    public void initLayout() {
 
         distanceLabel = new JLabel("", JLabel.CENTER);
         capitalNameLabel = new JLabel("", JLabel.CENTER);
@@ -94,7 +104,6 @@ public class GamePanel extends JPanel implements MouseListener {
         add(distanceLabel, gbc);
         gbc.gridx = 2;
         add(scoreLabel, gbc);
-
     }
 
     public void showPlayerPin(Graphics g) {
@@ -122,6 +131,7 @@ public class GamePanel extends JPanel implements MouseListener {
             //g.drawString(Pin.capitals.get(roundCounter).getName(), 30, 50);
             capitalNameLabel.setText(Pin.capitals.get(roundsCounter).getName());
             capitalNameLabel.repaint();
+            
         }
     }
 
@@ -137,9 +147,9 @@ public class GamePanel extends JPanel implements MouseListener {
 
         if (mouseClicked) {
             if (!nextRound) {
-
-                scoreLabel.setText("Punkty: " + differenceInKm);
-                distanceLabel.setText("Dystans: " + differenceInKm + " km");
+                //System.out.println("REPAINT");
+                scoreLabel.setText("Punkty: " + score);
+                distanceLabel.setText("Dystans: " + distanceInKm + " km");
                 scoreLabel.setVisible(true);
                 distanceLabel.setVisible(true);
             }
@@ -149,6 +159,7 @@ public class GamePanel extends JPanel implements MouseListener {
             scoreLabel.setVisible(false);
             distanceLabel.setVisible(false);
             nextRound = false;
+            width = 1024;
         }
     }
 
@@ -160,6 +171,13 @@ public class GamePanel extends JPanel implements MouseListener {
         super.paintComponent(g);
         g.drawImage(Images.map, 0, 0, null);
         startRound(g);
+        
+        g.setColor(Color.GRAY);
+        g.fillRect(0, 30, 1024, 8);
+        g.setColor(Color.GREEN);
+        g.fillRect(0, 30, width, 8);
+        
+     
         showPlayerPin(g);
         showActualPin(g);
 
@@ -173,17 +191,27 @@ public class GamePanel extends JPanel implements MouseListener {
             mouseClicked = true;
             roundsCounter = roundsCounter + 1;
             Pin.loadPlayerXY(e.getX(), e.getY());
-
-            System.out.println(Pin.getPlayerX() + ", " + Pin.getPlayerY());
-
-            //System.out.println(Pin.getActualX(roundsCounter) + ", " + Pin.getActualY(roundsCounter));
-
-            diff = Math.round(Pin.getDifferenceInKm(Pin.getPlayerX(), Pin.getPlayerY(), Pin.getActualX(roundsCounter), Pin.getActualY(roundsCounter)));
-            BigDecimal diffString = new BigDecimal(Double.valueOf(diff).toString());
-            differenceInKm = diffString.stripTrailingZeros().toPlainString();
+            sumScore();
+            //System.out.println(Pin.getPlayerX() + ", " + Pin.getPlayerY());
 
         }
 
+    }
+
+    private void sumScore() {
+        getDistance = Math.round(Pin.getDifferenceInKm(Pin.getPlayerX(), Pin.getPlayerY(), Pin.getActualX(roundsCounter), Pin.getActualY(roundsCounter)));
+        //score += getDistance;
+        sumScore = Math.floor(Math.exp(-getDistance/1000) * 100) * timeBonus;
+        totalScore += sumScore;
+        distanceInKm = toString(getDistance);
+        score = toString(sumScore);
+        System.out.println(totalScore);
+        
+    }
+
+    private String toString(double d) {
+        BigDecimal diffString = new BigDecimal(Double.valueOf(d).toString());
+        return diffString.stripTrailingZeros().toPlainString();
     }
 
     @Override
@@ -208,27 +236,43 @@ public class GamePanel extends JPanel implements MouseListener {
 
     public void doOneLoop() {
         if (running == true) {
-            //System.out.println("RUNNING");
+            if (activeDisplay == true) {
+            timePassed++;
+            timeBonus = 100 - timePassed;
+            width -= 12;
+            //System.out.println(timeBonus);
+            if (timePassed == 100) {
+                nextRound = true;
+                mouseClicked = false;
+                roundsCounter = roundsCounter + 1;
+                timePassed++;
+            }
+            if (timePassed > 100) {
+                timePassed = 0;
+                activeDisplay = true;
+            }
+            if (mouseClicked) {
+                timePassed = 0;
+            }
+            }
         }
-
+       
+        
         if (mouseClicked == true) {
             activeDisplay = false;
-            //System.out.println(delayCounter);
-            //System.out.println("MOUSE CLICKED");
-            delayCounter++;
-            if (delayCounter == 30) {
-                //System.out.println(delayCounter);
-                //System.out.println("END DISPLAY");
+            timePassed++;
+            //System.out.println(timePassed);
+            if (timePassed == 50) {
                 mouseClicked = false;
                 nextRound = true;
-                delayCounter++;
+                timePassed++;
             }
-            if (delayCounter > 30) {
-                delayCounter = 0;
+            if (timePassed > 50) {
+                timePassed = 0;
                 activeDisplay = true;
             }
         }
-        
+
         repaint();
     }
 
