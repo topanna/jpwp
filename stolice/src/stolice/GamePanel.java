@@ -17,11 +17,13 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.util.List;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +43,7 @@ import javax.swing.Timer;
  *
  * @author Ania
  */
-public class GamePanel extends JPanel implements MouseListener {
+public class GamePanel extends JPanel implements MouseListener, MouseMotionListener {
 
     boolean mouseClicked = false;
     boolean mouseReleased = false;
@@ -58,11 +60,24 @@ public class GamePanel extends JPanel implements MouseListener {
     int timeBonus = 0;
     int width = 1024;
     int totalScore = 0;
+    private Menu menu;
+    boolean startHover = false;
+    public Rectangle totalScoreLabel = new Rectangle((1024 - 400) / 2, (768 - 300) / 2, 400, 300);
+
+    public enum STATE {
+        MENU,
+        GAME,
+        END
+    };
+
+    public static STATE State = STATE.MENU;
 
     public GamePanel() {
         setPreferredSize(new Dimension(1024, 768));
+        setBackground(new Color(242, 242, 242, 255));
         setFocusable(true); //dddd
         addMouseListener(this);
+        addMouseMotionListener(this);
         //Pin.initActualPoints();
         Pin.initActualCapitals();
         Images.getImages();
@@ -71,6 +86,7 @@ public class GamePanel extends JPanel implements MouseListener {
         running = true;
         activeDisplay = true;
         initLayout();
+        menu = new Menu();
 
     }
 
@@ -131,7 +147,7 @@ public class GamePanel extends JPanel implements MouseListener {
             //g.drawString(Pin.capitals.get(roundCounter).getName(), 30, 50);
             capitalNameLabel.setText(Pin.capitals.get(roundsCounter).getName());
             capitalNameLabel.repaint();
-            
+
         }
     }
 
@@ -168,45 +184,75 @@ public class GamePanel extends JPanel implements MouseListener {
 
     @Override
     public void paintComponent(Graphics g) {
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         super.paintComponent(g);
-        g.drawImage(Images.map, 0, 0, null);
-        startRound(g);
-        
-        g.setColor(Color.GRAY);
-        g.fillRect(0, 30, 1024, 8);
-        g.setColor(Color.GREEN);
-        g.fillRect(0, 30, width, 8);
-        
-     
-        showPlayerPin(g);
-        showActualPin(g);
 
-        displayScore(g);
+        if (State == STATE.GAME) {
+            g.drawImage(Images.map, 0, 0, null);
+            startRound(g);
+            g.setColor(Color.GRAY);
+            g.fillRect(0, 30, 1024, 8);
+            g.setColor(Color.GREEN);
+            g.fillRect(0, 30, width, 8);
+            showPlayerPin(g);
+            showActualPin(g);
+            displayScore(g);
+
+        }
+        if (State == STATE.END) {
+            Graphics2D g2d = (Graphics2D) g;
+            g.drawImage(Images.menu, 0, 0, null);
+            capitalNameLabel.setVisible(false);
+            g.setColor(new Color(217, 179, 140, 255));
+            g2d.fill(totalScoreLabel);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 55));
+            g.drawString("Koniec gry", totalScoreLabel.x + totalScoreLabel.width / 2 - 125, totalScoreLabel.y + totalScoreLabel.height / 2 - 40);
+            g.drawString(String.valueOf(totalScore), totalScoreLabel.x + totalScoreLabel.width / 2 - 65, totalScoreLabel.y + totalScoreLabel.height / 2 + 80);
+            g.setFont(new Font("Arial", Font.PLAIN, 25));
+            g.drawString("Wynik końcowy: ", totalScoreLabel.x + totalScoreLabel.width / 2 - 90, totalScoreLabel.y + totalScoreLabel.height / 2 + 20);
+        } else if (State == STATE.MENU) {
+            menu.init(g);
+        }
+
         //System.out.println("REPAINT");
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (activeDisplay) {
-            mouseClicked = true;
-            roundsCounter = roundsCounter + 1;
-            Pin.loadPlayerXY(e.getX(), e.getY());
-            sumScore();
-            //System.out.println(Pin.getPlayerX() + ", " + Pin.getPlayerY());
+       
+    }
 
+    @Override
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        int mx = e.getX();
+        int my = e.getY();
+        if (mx > menu.playButton.x && mx < menu.playButton.x + menu.playButton.width && my > menu.playButton.y
+                && my < menu.playButton.y + menu.playButton.height) {
+            menu.Mouse = Menu.MOUSE.HOVER;
+            menu.Button = Menu.BUTTON.PLAY;
+        } else if (mx > menu.quitButton.x && mx < menu.quitButton.x + menu.quitButton.width && my > menu.quitButton.y
+                && my < menu.quitButton.y + menu.quitButton.height) {
+            menu.Mouse = Menu.MOUSE.HOVER;
+            menu.Button = Menu.BUTTON.QUIT;
+        } else {
+            menu.Mouse = Menu.MOUSE.EXITED;
         }
-
     }
 
     private void sumScore() {
         getDistance = Math.round(Pin.getDifferenceInKm(Pin.getPlayerX(), Pin.getPlayerY(), Pin.getActualX(roundsCounter), Pin.getActualY(roundsCounter)));
         //score += getDistance;
-        sumScore = Math.floor(Math.exp(-getDistance/1000) * 100) * timeBonus;
+        sumScore = Math.floor(Math.exp(-getDistance / 1000) * timeBonus * 10);
         totalScore += sumScore;
         distanceInKm = toString(getDistance);
         score = toString(sumScore);
         System.out.println(totalScore);
-        
+
     }
 
     private String toString(double d) {
@@ -216,6 +262,35 @@ public class GamePanel extends JPanel implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
+
+         System.out.println(Pin.getPlayerX() + ", " + Pin.getPlayerY());
+        int mx = e.getX();
+        int my = e.getY();
+
+        if (State == STATE.GAME) {
+            if (activeDisplay) {
+                mouseClicked = true;
+                roundsCounter = roundsCounter + 1;
+                Pin.loadPlayerXY(e.getX(), e.getY());
+                sumScore();
+                if (roundsCounter == 43) {
+                    State = STATE.END;
+                }
+
+            }
+        }
+
+        if (mx > menu.playButton.x && mx < menu.playButton.x + menu.playButton.width && my > menu.playButton.y
+                && my < menu.playButton.y + menu.playButton.height) {
+            menu.Mouse = Menu.MOUSE.CLICKED;
+            menu.Button = Menu.BUTTON.PLAY;
+        } else if (mx > menu.quitButton.x && mx < menu.quitButton.x + menu.quitButton.width && my > menu.quitButton.y
+                && my < menu.quitButton.y + menu.quitButton.height) {
+            menu.Mouse = Menu.MOUSE.CLICKED;
+            menu.Button = Menu.BUTTON.QUIT;
+        } else {
+            menu.Mouse = Menu.MOUSE.EXITED;
+        }
 
     }
 
@@ -235,45 +310,48 @@ public class GamePanel extends JPanel implements MouseListener {
     }
 
     public void doOneLoop() {
-        if (running == true) {
-            if (activeDisplay == true) {
-            timePassed++;
-            timeBonus = 100 - timePassed;
-            width -= 12;
-            //System.out.println(timeBonus);
-            if (timePassed == 100) {
-                nextRound = true;
-                mouseClicked = false;
-                roundsCounter = roundsCounter + 1;
+
+        repaint();
+
+        if (State == STATE.GAME) {
+            if (running == true) {
+                if (activeDisplay == true) {
+                    timePassed++;
+                    timeBonus = 140 - timePassed;
+                    width -= 8;
+                    //System.out.println(timeBonus);
+                    if (timePassed == 140) {           //140x50=7s
+                        nextRound = true;
+                        mouseClicked = false;
+                        roundsCounter = roundsCounter + 1;
+                        timePassed++;
+                    }
+                    if (timePassed > 140) {
+                        timePassed = 0;
+                        activeDisplay = true;
+                    }
+                    if (mouseClicked) {
+                        timePassed = 0;
+                    }
+                }
+            }
+
+            if (mouseClicked == true) {
+                activeDisplay = false;
                 timePassed++;
-            }
-            if (timePassed > 100) {
-                timePassed = 0;
-                activeDisplay = true;
-            }
-            if (mouseClicked) {
-                timePassed = 0;
-            }
-            }
-        }
-       
-        
-        if (mouseClicked == true) {
-            activeDisplay = false;
-            timePassed++;
-            //System.out.println(timePassed);
-            if (timePassed == 50) {
-                mouseClicked = false;
-                nextRound = true;
-                timePassed++;
-            }
-            if (timePassed > 50) {
-                timePassed = 0;
-                activeDisplay = true;
+                //System.out.println(timePassed);
+                if (timePassed == 40) {            //40x50 = 2s
+                    mouseClicked = false;
+                    nextRound = true;
+                    timePassed++;
+                }
+                if (timePassed > 40) {
+                    timePassed = 0;
+                    activeDisplay = true;
+                }
             }
         }
 
-        repaint();
     }
 
 }

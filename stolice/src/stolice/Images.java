@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
  */
 public class Images {
 
+    static Image menu;
     static Image map;
     static Image blackPin;
     static Image redPin;
@@ -24,6 +25,7 @@ public class Images {
     public static void getImages() {
         try {
             //img = ImageIO.read(new File("build\\classes\\res\\map.png"));
+            menu = ImageIO.read(Images.class.getResource("/res/menu.png"));
             map = ImageIO.read(Images.class.getResource("/res/map.png"));
             blackPin = ImageIO.read(Images.class.getResource("/res/pinblack.png"));
             redPin = ImageIO.read(Images.class.getResource("/res/pinred.png"));
