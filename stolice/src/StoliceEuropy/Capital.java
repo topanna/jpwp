@@ -3,7 +3,6 @@ package StoliceEuropy;
 /**
  * Klasa grupująca informacje o wszystkich stolicach wykorzystanych w grze
  *
- * @author Anna Topa
  */
 public class Capital {
 

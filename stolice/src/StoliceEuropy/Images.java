@@ -9,7 +9,6 @@ import javax.imageio.ImageIO;
 /**
  * Klasa wczytująca grafiki wykorzystywane w grze
  *
- * @author Anna Topa
  */
 public class Images {
 
@@ -22,7 +21,7 @@ public class Images {
      * Tło gry
      */
     public static Image map;
-    
+
     /**
      * Tło końcowe gry
      */

@@ -10,7 +10,6 @@ import java.awt.RenderingHints;
 /**
  * Klasa odpowiadająca za menu gry
  *
- * @author Anna Topa
  */
 public class Menu {
 

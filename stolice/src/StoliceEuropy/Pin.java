@@ -7,7 +7,6 @@ import java.util.ArrayList;
 /**
  * Klasa odpowiadającą za pobranie informacji o wyświetlanych pinezkach
  *
- * @author Anna Topa
  */
 public class Pin {
 

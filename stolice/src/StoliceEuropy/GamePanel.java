@@ -20,7 +20,6 @@ import javax.swing.Timer;
 /**
  * Klasa odpowiadająca za główny obszar graficzny gry
  *
- * @author Anna Topa
  */
 public class GamePanel extends JPanel implements MouseListener, MouseMotionListener {
 

@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 /**
  * Klasa odpowiadająca za pętle gry
  *
- * @author Anna Topa
  */
 public class GameLoop implements ActionListener {
 

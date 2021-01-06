@@ -6,7 +6,6 @@ import javax.swing.JFrame;
 /**
  * Uruchamia aplikację
  *
- * @author Anna Topa
  */
 public class Start {
 
