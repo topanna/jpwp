@@ -1,6 +1,7 @@
 package StoliceEuropy;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -154,7 +155,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
     /**
-     * Rozpoczyna kolejną rundę (wskazanie miasta)
+     * Rozpoczyna kolejną rundę (wyświetla nowe miasto do wskazania)
      *
      * @param g Aktualny kontekst graficzny wyświetlany na ekranie
      */
@@ -205,8 +206,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         super.paintComponent(g);
 
-        if (State == STATE.GAME) {
+        if (State == STATE.GAME) { 
+            //Ustawia kursor
+            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            
+            //Rysuje tło gry
             g.drawImage(Images.map, 0, 0, null);
+            
             startRound(g);
 
             //Pasek czasu
