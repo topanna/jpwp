@@ -227,6 +227,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
 
         if (State == STATE.END) {
+            //Przywraca domyślny kursor
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            
             Graphics2D g2d = (Graphics2D) g;
 
             //Rysuje tło ekranu końcowego gry
