@@ -3,6 +3,7 @@ package StoliceEuropy;
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Klasa odpowiadającą za pobranie informacji o wyświetlanych pinezkach
@@ -30,7 +31,8 @@ public class Pin {
     public static ArrayList<Capital> capitals;
 
     /**
-     * Inicjalizuje wszystkie stolice
+     * Inicjalizuje wszystkie stolice, zapewnia losową sekwencję stolic dla
+     * każdej rozgrywki
      */
     public static void initCapitals() {
         capitals = new ArrayList<>();
@@ -78,6 +80,7 @@ public class Pin {
         capitals.add(new Capital(42, "PARYŻ, Francja", 348, 486));
         capitals.add(new Capital(43, "HELSINKI, Finlandia", 604, 236));
 
+        Collections.shuffle(capitals);
     }
 
     /**
@@ -145,7 +148,7 @@ public class Pin {
         int h = abs(x2 - x1);
         int v = abs(y2 - y1);
         double diffInPx = sqrt(h * h + v * v);
-        return diffInPx / 18.25 * 100; //km
+        return diffInPx / 18.25 * 100;  //100km odpowiada 18.25px na mapie
     }
 
 }

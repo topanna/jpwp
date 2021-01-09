@@ -21,7 +21,7 @@ public class GameLoop implements ActionListener {
     }
 
     /**
-     * Metoda odpowiedzialną za wywołanie pojedynczej pętli gry
+     * Metoda odpowiedzialna za wywołanie pojedynczej pętli gry
      */
     @Override
     public void actionPerformed(ActionEvent e) {

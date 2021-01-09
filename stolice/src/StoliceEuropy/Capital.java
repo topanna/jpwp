@@ -27,7 +27,7 @@ public class Capital {
     public int y;
 
     /**
-     * Konstruktor klasy grupującej dane o stolicach
+     * Konstruktor klasy zawierającej dane o stolicy
      *
      * @param id Numer przyporządkowany stolicy
      * @param name Nazwa stolicy

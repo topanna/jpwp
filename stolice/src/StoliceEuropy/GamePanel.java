@@ -1,5 +1,6 @@
 package StoliceEuropy;
 
+import static StoliceEuropy.Pin.capitals;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -14,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.math.BigDecimal;
+import java.util.Collections;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -27,14 +29,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private boolean mouseClicked = false;
     private int roundNumber = 0;
     private Timer timer;
-    private double getDistance;
+    private double getDistance; //różnica między wskazaniem gracza a faktycznym położeniem
     private JLabel capitalNameLabel, distanceLabel, scoreLabel;
     private int timePassed = 0;
     private boolean running = false;
     private boolean nextRound = false;
     private boolean activeDisplay = false;
+    private boolean cursorSet = false;
     private String distanceInKm, score;
-    private double sumScore = 0;
+    private double sumScore = 0;    //suma punktów za wskazanie gracza
     private int timeBonus = 0;
     private final int gameWidth = 1024;
     private final int gameHeight = 768;
@@ -48,12 +51,22 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public Rectangle totalScoreLabel = new Rectangle((gameWidth - 400) / 2, (gameHeight - 300) / 2, 400, 300);
 
     /**
-     * Przycisk wyjścia z gry
+     * Przycisk końca gry
      */
-    public Rectangle quitButton = new Rectangle((gameWidth - 200) / 2, 544, 200, 50);
+    public Rectangle quitButton = new Rectangle(gameWidth - 215, gameHeight - 65, 200, 50);
 
     /**
-     * Stan gry
+     * Przycisk "Graj ponownie"
+     */
+    public Rectangle playAgainButton = new Rectangle(312, 544, 198, 50);
+
+    /**
+     * Przycisk wyjścia z gry
+     */
+    public Rectangle exitButton = new Rectangle(514, 544, 198, 50);
+
+    /**
+     * Określa możliwe stany gry
      */
     public enum STATE {
         /**
@@ -71,9 +84,57 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     };
 
     /**
+     * Określa wbudowane przyciski w grze
+     */
+    public enum BUTTON {
+
+        /**
+         * Przycisk kończący grę
+         */
+        QUIT,
+        /**
+         * Przycisk "Graj ponownie"
+         */
+        PLAYAGAIN,
+        /**
+         * Przycisk wyjścia z gry
+         */
+        EXIT
+    };
+
+    /**
+     * Określa możliwe stany myszki
+     */
+    public enum MOUSE {
+
+        /**
+         * Kursor myszki poza aktywnymi elementami
+         */
+        EXITED,
+        /**
+         * Najechanie kursorem myszki
+         */
+        HOVER,
+        /**
+         * Kliknięcie myszką
+         */
+        CLICKED
+    };
+
+    /**
      * Wskazuje obecny stan gry
      */
     public static STATE State = STATE.MENU;
+
+    /**
+     * Wskazuje obecny stan myszki
+     */
+    public static MOUSE Mouse;
+
+    /**
+     * Wskazuje używany przez gracza przycisk (w grze)
+     */
+    public BUTTON Button;
 
     /**
      * Konstruktor klasy pola graficznego gry Wczytuje dane i grafikę Wczytuje
@@ -114,6 +175,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         scoreLabel.setVisible(false);   //punkty są widoczne dopiero po wskazaniu gracza
         distanceLabel.setVisible(false);    //dystans jest widoczny dopiero po wskazaniu gracza
 
+        //Tworzy układ 3 obszarów na ekranie gry
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weighty = 1;
@@ -127,6 +189,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         add(distanceLabel, gbc);
         gbc.gridx = 2;
         add(scoreLabel, gbc);
+
     }
 
     /**
@@ -198,21 +261,49 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
      */
     @Override
     public void paintComponent(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
 
         //Antyaliasing
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
         super.paintComponent(g);
 
-        if (State == STATE.GAME) { 
-            //Ustawia kursor
-            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            
+        if (State == STATE.GAME) {
+            //Ustawia kursor gry
+            if (!cursorSet) {
+                setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+                cursorSet = true;
+            }
+
             //Rysuje tło gry
             g.drawImage(Images.map, 0, 0, null);
-            
+
+            //Tworzy przycisk "Koniec gry"
+            g.setColor(new Color(217, 179, 140, 255));
+            g2d.fill(quitButton);
+
+            //Obsługa przycisku "Koniec gry"
+            if (Button == BUTTON.QUIT) {
+                if (Mouse == MOUSE.HOVER) {
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    g.setColor(new Color(204, 153, 102, 255));
+                    g2d.fill(quitButton);
+                }
+                if (Mouse == MOUSE.CLICKED) {
+                    State = STATE.END;
+                }
+                if (Mouse == MOUSE.EXITED) {
+                    setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+                }
+            }
+
+            //Wyświetlenie napisu na przycisku
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 25));
+            g.drawString("Koniec gry", quitButton.x + quitButton.width / 2 - 55, quitButton.y + quitButton.height / 2 + 10);
+
             startRound(g);
 
             //Pasek czasu
@@ -229,8 +320,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         if (State == STATE.END) {
             //Przywraca domyślny kursor
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            
-            Graphics2D g2d = (Graphics2D) g;
 
             //Rysuje tło ekranu końcowego gry
             g.drawImage(Images.endScreen, 0, 0, null);
@@ -240,28 +329,48 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             scoreLabel.setVisible(false);
 
             g.setColor(new Color(217, 179, 140, 255));
-            g2d.fill(quitButton);
-            g2d.fill(totalScoreLabel);
+            g2d.fill(playAgainButton);   //przycisk "Graj ponownie"
+            g2d.fill(exitButton);   //przycisk "Wyjście"
+            g2d.fill(totalScoreLabel);  //obszar wyświetlania wyniku końcowego
+
+            //Obsługa przycisku "Graj ponownie"
+            if (Button == BUTTON.PLAYAGAIN) {
+                if (Mouse == MOUSE.HOVER) {
+                    g.setColor(new Color(204, 153, 102, 255));
+                    g2d.fill(playAgainButton);
+                }
+                if (Mouse == MOUSE.CLICKED) {
+                    capitalNameLabel.setVisible(true);
+                    nextRound = true;
+                    Collections.shuffle(capitals);  //losuje sekwencję dla nowej rozgrywki
+                    totalScore = 0;
+                    roundNumber = 0;
+                    timePassed = 0;
+                    cursorSet = false;
+                    State = STATE.GAME; //przywraca stan gry
+                }
+            }
 
             //Obsługa przycisku "Wyjście"
-            if (menu.Button == Menu.BUTTON.ENDQUIT) {
-                if (menu.Mouse == Menu.MOUSE.HOVER) {
+            if (Button == BUTTON.EXIT) {
+                if (Mouse == MOUSE.HOVER) {
                     g.setColor(new Color(204, 153, 102, 255));
-                    g2d.fill(quitButton);
+                    g2d.fill(exitButton);
                 }
-                if (menu.Mouse == Menu.MOUSE.CLICKED) {
+                if (Mouse == MOUSE.CLICKED) {
                     System.exit(0);
                 }
             }
 
-            //Wyświetlenie wyniku końcowego
+            //Wyświetlenie wyniku końcowego i tekstu na elementach
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.PLAIN, 55));
             g.drawString("Koniec gry", totalScoreLabel.x + totalScoreLabel.width / 2 - 125, totalScoreLabel.y + totalScoreLabel.height / 2 - 40);
             g.drawString(String.valueOf(totalScore), totalScoreLabel.x + totalScoreLabel.width / 2 - g.getFontMetrics().stringWidth(String.valueOf(totalScore)) / 2, totalScoreLabel.y + totalScoreLabel.height / 2 + 80);
             g.setFont(new Font("Arial", Font.PLAIN, 25));
             g.drawString("Wynik końcowy: ", totalScoreLabel.x + totalScoreLabel.width / 2 - 90, totalScoreLabel.y + totalScoreLabel.height / 2 + 20);
-            g.drawString("Wyjście", quitButton.x + quitButton.width / 2 - 40, quitButton.y + quitButton.height / 2 + 10);
+            g.drawString("Graj ponownie", playAgainButton.x + 20, playAgainButton.y + playAgainButton.height / 2 + 10);
+            g.drawString("Wyjście", exitButton.x + exitButton.width / 2 - 40, exitButton.y + exitButton.height / 2 + 10);
 
         } else if (State == STATE.MENU) {
             menu.render(g);
@@ -269,7 +378,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
     /**
-     * Obsługa zdarzeń - poruszanie myszką
+     * Obsługa zdarzeń - poruszanie myszką Zależne od stanu gry
+     *
      *
      * @param e Zdarzenie uruchamiane w momencie interakcji gracza z myszką
      */
@@ -278,35 +388,53 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         int mx = e.getX();
         int my = e.getY();
 
+        //Obsługa myszki w grze
+        if (State == STATE.GAME) {
+            if (mx > quitButton.x && mx < quitButton.x + quitButton.width && my > quitButton.y
+                    && my < quitButton.y + quitButton.height) {
+                Mouse = MOUSE.HOVER;
+                Button = BUTTON.QUIT;
+            } else {
+                Mouse = MOUSE.EXITED;
+            }
+        }
+
         //Obsługa myszki w menu
         if (State == STATE.MENU) {
             if (mx > menu.playButton.x && mx < menu.playButton.x + menu.playButton.width && my > menu.playButton.y
                     && my < menu.playButton.y + menu.playButton.height) {
-                menu.Mouse = Menu.MOUSE.HOVER;
+                Mouse = MOUSE.HOVER;
                 menu.Button = Menu.BUTTON.PLAY;
-            } else if (mx > menu.quitButton.x && mx < menu.quitButton.x + menu.quitButton.width && my > menu.quitButton.y
-                    && my < menu.quitButton.y + menu.quitButton.height) {
-                menu.Mouse = Menu.MOUSE.HOVER;
-                menu.Button = Menu.BUTTON.QUIT;
+            } else if (mx > menu.exitButton.x && mx < menu.exitButton.x + menu.exitButton.width && my > menu.exitButton.y
+                    && my < menu.exitButton.y + menu.exitButton.height) {
+                Mouse = MOUSE.HOVER;
+                menu.Button = Menu.BUTTON.EXIT;
             } else {
-                menu.Mouse = Menu.MOUSE.EXITED;
+                Mouse = MOUSE.EXITED;
             }
         }
 
         //Obsługa myszki na ekranie końcowym
         if (State == STATE.END) {
-            if (mx > quitButton.x && mx < quitButton.x + quitButton.width && my > quitButton.y
-                    && my < quitButton.y + quitButton.height) {
-                menu.Mouse = Menu.MOUSE.HOVER;
-                menu.Button = Menu.BUTTON.ENDQUIT;
+            if (mx > exitButton.x && mx < exitButton.x + exitButton.width && my > exitButton.y
+                    && my < exitButton.y + exitButton.height) {
+                Mouse = MOUSE.HOVER;
+                Button = BUTTON.EXIT;
+            } else if (mx > playAgainButton.x && mx < playAgainButton.x + playAgainButton.width && my > playAgainButton.y
+                    && my < playAgainButton.y + playAgainButton.height) {
+                Mouse = MOUSE.HOVER;
+                Button = BUTTON.PLAYAGAIN;
             } else {
-                menu.Mouse = Menu.MOUSE.EXITED;
+                Mouse = MOUSE.EXITED;
             }
         }
     }
 
     /**
-     * Obsługa zdarzeń - wciśnięcie przycisku myszki
+     * Obsługa zdarzeń - wciśnięcie przycisku myszki Zależne od stanu gry
+     * Zapisuje współrzędne (w px) wskazania gracza, obsługuje zdarzenia w menu
+     * i w grze
+     *
      *
      * @param e Zdarzenie uruchamiane w momencie interakcji gracza z myszką
      */
@@ -319,11 +447,17 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         //Obsługa myszki w grze
         if (State == STATE.GAME) {
-            if (activeDisplay) {
-                mouseClicked = true;
+            if (mx > quitButton.x && mx < quitButton.x + quitButton.width && my > quitButton.y
+                    && my < quitButton.y + quitButton.height) {
+                Mouse = MOUSE.CLICKED;
+                Button = BUTTON.QUIT;
+            } else if (activeDisplay) {
+                mouseClicked = true;    //kliknięcie myszką powoduje przejście do następnej rundy
                 roundNumber = roundNumber + 1;
-                Pin.loadPlayerXY(mx, my);
-                sumScore();
+                Pin.loadPlayerXY(mx, my);   //pobranie wskazania gracza
+                sumScore(); //obliczenie punktów za wskazanie i sumowanie całkowitego wyniku
+            } else {
+                Mouse = MOUSE.EXITED;
             }
         }
 
@@ -331,36 +465,40 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         if (State == STATE.MENU) {
             if (mx > menu.playButton.x && mx < menu.playButton.x + menu.playButton.width && my > menu.playButton.y
                     && my < menu.playButton.y + menu.playButton.height) {
-                menu.Mouse = Menu.MOUSE.CLICKED;
+                Mouse = MOUSE.CLICKED;
                 menu.Button = Menu.BUTTON.PLAY;
-            } else if (mx > menu.quitButton.x && mx < menu.quitButton.x + menu.quitButton.width && my > menu.quitButton.y
-                    && my < menu.quitButton.y + menu.quitButton.height) {
-                menu.Mouse = Menu.MOUSE.CLICKED;
-                menu.Button = Menu.BUTTON.QUIT;
+            } else if (mx > menu.exitButton.x && mx < menu.exitButton.x + menu.exitButton.width && my > menu.exitButton.y
+                    && my < menu.exitButton.y + menu.exitButton.height) {
+                Mouse = MOUSE.CLICKED;
+                menu.Button = Menu.BUTTON.EXIT;
             } else {
-                menu.Mouse = Menu.MOUSE.EXITED;
+                Mouse = MOUSE.EXITED;
             }
         }
 
         //Obsługa myszki na ekranie końcowym
         if (State == STATE.END) {
-            if (mx > quitButton.x && mx < quitButton.x + quitButton.width && my > quitButton.y
-                    && my < quitButton.y + quitButton.height) {
-                menu.Mouse = Menu.MOUSE.CLICKED;
-                menu.Button = Menu.BUTTON.ENDQUIT;
+            if (mx > exitButton.x && mx < exitButton.x + exitButton.width && my > exitButton.y
+                    && my < exitButton.y + exitButton.height) {
+                Mouse = MOUSE.CLICKED;
+                Button = BUTTON.EXIT;
+            } else if (mx > playAgainButton.x && mx < playAgainButton.x + playAgainButton.width && my > playAgainButton.y
+                    && my < playAgainButton.y + playAgainButton.height) {
+                Mouse = MOUSE.CLICKED;
+                Button = BUTTON.PLAYAGAIN;
             } else {
-                menu.Mouse = Menu.MOUSE.EXITED;
+                Mouse = MOUSE.EXITED;
             }
 
         }
     }
 
     /**
-     * Oblicza dystans w kilometrach oraz otrzymane punkty po każdej rundzie.
+     * Oblicza dystans w kilometrach oraz otrzymane punkty po każdej rundzie
      * Sumuje całkowity wynik
      *
      */
-    private void sumScore() {
+    public void sumScore() {
         //Obliczanie różnicy między wskazaniem gracza a faktycznym położeniem
         getDistance = Math.round(Pin.getDifferenceInKm(Pin.getPlayerX(), Pin.getPlayerY(), Pin.getActualX(roundNumber), Pin.getActualY(roundNumber)));
 
@@ -376,7 +514,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
     /**
-     * Zamiana zmiennej typu Double na String. Usunięcie zbędnych zer na końcu
+     * Zamiana zmiennej typu Double na String Usunięcie zbędnych zer na końcu
      * liczby
      *
      * @param d Wejściowy obiekt typu Double
@@ -388,7 +526,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
     /**
-     * Wykonuje pojedynczą pętle gry (pojedynczą rundę)
+     * Wykonuje pojedynczą pętle gry (pojedynczą rundę) Zlicza czas odpowiedzi
+     * gracza
      *
      */
     public void doOneLoop() {
@@ -430,7 +569,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 activeDisplay = false;
                 timePassed++;
                 //System.out.println(timePassed);
-                if (timePassed == 40) {            //50ms x 40 = 2s
+                if (timePassed == 40) { //50ms x 40 = 2s
                     mouseClicked = false;
                     nextRound = true;   //po 2s przechodzi do następnej rundy
                     timePassed++;
